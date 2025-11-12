@@ -13,7 +13,7 @@ import hashlib
 class MonitorEmpleoCloud:
     def __init__(self):
         self.url_base = "https://www.santafe.gob.ar/simtyss/portalempleo/"
-        self.url_busqueda = f"{self.url_base}?ofertas/"
+        self.url_busqueda = f"{self.url_base}ofertas/"
         self.archivo_estado = "empleos_anteriores.json"
         
         # Variables de entorno para configuración
