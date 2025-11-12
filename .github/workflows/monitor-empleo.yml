@@ -1,46 +1,39 @@
-# .github/workflows/monitor-empleo.yml
-# Workflow de GitHub Actions para monitorear ofertas de empleo automáticamente
+name: Monitor Empleo Santa Fe
 
-Name: Monitor Empleo Santa Fe
-
-On:
-  Schedule:
+on:
+  schedule:
     # Ejecutar cada 2 horas (cron syntax: minuto hora día mes día-semana)
-Cron: ‘0 */2 * * *’
-  Workflow_dispatch:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
 
-Jobs:
-  Monitorear-ofertas:
-    Runs-on: ubuntu-latest
-    
-    Steps:
-Name: Checkout del repositorio
-      Uses: actions/checkout@v3
-      With:
-        Token: ${{ secrets.GITHUB_TOKEN }}
-    
-Name: Configurar Python
-      Uses: actions/setup-python@v4
-      With:
-        Python-version: ‘3.10’
-    
-Name: Instalar dependencias
-      Run: |
-        Pip install requests beautifulsoup4 lxml
-    
-Name: Ejecutar monitor
-      Env:
-        EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      Run: |
-        Python monitor_cloud.py
-    
-Name: Guardar estado actualizado
-      Run: |
-        Git config –local user.email “github-actions[bot]@users.noreply.github.com”
-        Git config –local user.name “github-actions[bot]”
-        Git add empleos_anteriores.json
-        Git diff –quiet && git diff –staged –quiet || git commit -m “Actualizar estado de empleos [skip ci]”
-        Git push
+jobs:
+  monitorear-ofertas:
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependencias
+        run: |
+          pip install requests beautifulsoup4 lxml
+
+      - name: Ejecutar monitor
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python monitor_cloud.py
+
+      - name: Guardar estado actualizado
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add empleos_anteriores.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Actualizar estado de empleos [skip ci]"
+          git push
