@@ -1,0 +1,46 @@
+# .github/workflows/monitor-empleo.yml
+# Workflow de GitHub Actions para monitorear ofertas de empleo automáticamente
+
+Name: Monitor Empleo Santa Fe
+
+On:
+  Schedule:
+    # Ejecutar cada 2 horas (cron syntax: minuto hora día mes día-semana)
+Cron: ‘0 */2 * * *’
+  Workflow_dispatch:
+
+Jobs:
+  Monitorear-ofertas:
+    Runs-on: ubuntu-latest
+    
+    Steps:
+Name: Checkout del repositorio
+      Uses: actions/checkout@v3
+      With:
+        Token: ${{ secrets.GITHUB_TOKEN }}
+    
+Name: Configurar Python
+      Uses: actions/setup-python@v4
+      With:
+        Python-version: ‘3.10’
+    
+Name: Instalar dependencias
+      Run: |
+        Pip install requests beautifulsoup4 lxml
+    
+Name: Ejecutar monitor
+      Env:
+        EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      Run: |
+        Python monitor_cloud.py
+    
+Name: Guardar estado actualizado
+      Run: |
+        Git config –local user.email “github-actions[bot]@users.noreply.github.com”
+        Git config –local user.name “github-actions[bot]”
+        Git add empleos_anteriores.json
+        Git diff –quiet && git diff –staged –quiet || git commit -m “Actualizar estado de empleos [skip ci]”
+        Git push
+
